@@ -147,7 +147,8 @@ def init_db():
     """)
 
     # Seed admin if not exists
-    pw_hash = bcrypt.hashpw(b"admin1234", bcrypt.gensalt()).decode()
+# Seed admin safely (idempotent)
+pw_hash = bcrypt.hashpw(b"admin1234", bcrypt.gensalt()).decode()
 
 db.execute("""
 INSERT OR IGNORE INTO users (id, full_name, phone, password_hash, role)
@@ -160,7 +161,6 @@ VALUES (1)
 """)
 
 db.commit()
-db.close()
 
 
 # ─────────────────────────── LEDGER ENGINE ───────────────────────────────────
@@ -193,13 +193,12 @@ def login():
         password = request.form["password"].encode()
         user = query("SELECT * FROM users WHERE phone=? AND is_active=1", (phone,), one=True)
         if not user:
-    flash("Invalid phone number or password.", "danger")
-    return render_template("login.html")
-            session.update({"user_id": user["id"], "full_name": user["full_name"], "role": user["role"]})
-            audit("LOGIN", "users", user["id"])
-            flash(f"Welcome back, {user['full_name']}!", "success")
-            return redirect(url_for("dashboard"))
-        flash("Invalid phone number or password.", "danger")
+            flash("Invalid phone number or password.", "danger")
+            return render_template("login.html")
+        session.update({"user_id": user["id"], "full_name": user["full_name"], "role": user["role"]})
+        audit("LOGIN", "users", user["id"])
+        flash(f"Welcome back, {user['full_name']}!", "success")
+        return redirect(url_for("dashboard"))
     return render_template("login.html")
 
 
