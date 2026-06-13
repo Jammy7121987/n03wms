@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-speedometer2 me-2 text-primary"></i>Admin Dashboard</h4>
+    <small class="text-muted">Full system overview — {{ session.full_name }}</small>
+  </div>
+  <span class="text-muted small"><i class="bi bi-calendar me-1"></i>{{ now if now else '' }}</span>
+</div>
+
+<!-- Balance Hero -->
+<div class="balance-hero mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <p class="mb-1 opacity-75 small text-uppercase letter-spacing">Current Group Balance</p>
+      <div class="amount">KES {{ "{:,.0f}".format(balance) }}</div>
+      <p class="mt-2 opacity-75 small">Net of all approved expenses</p>
+    </div>
+    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+      <div class="d-flex gap-3 justify-content-md-end">
+        <div class="text-center">
+          <div class="fw-bold fs-5">KES {{ "{:,.0f}".format(total_contributions) }}</div>
+          <div class="opacity-75 small"><i class="bi bi-arrow-down-circle me-1"></i>Total In</div>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,0.3)"></div>
+        <div class="text-center">
+          <div class="fw-bold fs-5">KES {{ "{:,.0f}".format(total_expenses) }}</div>
+          <div class="opacity-75 small"><i class="bi bi-arrow-up-circle me-1"></i>Total Out</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#e8f4fd;color:#2e86c1"><i class="bi bi-people-fill"></i></div>
+        <div>
+          <div class="stat-value">{{ total_members }}</div>
+          <div class="stat-label">Active Members</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#d4edda;color:#27ae60"><i class="bi bi-arrow-down-circle-fill"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:1.3rem">KES {{ "{:,.0f}".format(total_contributions) }}</div>
+          <div class="stat-label">Total Contributions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#fdecea;color:#c0392b"><i class="bi bi-arrow-up-circle-fill"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:1.3rem">KES {{ "{:,.0f}".format(total_expenses) }}</div>
+          <div class="stat-label">Total Expenses</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#fff3cd;color:#f39c12"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+          <div class="stat-value">{{ pending_expenses }}</div>
+          <div class="stat-label">Pending Approvals</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Pending Expense Approvals -->
+  <div class="col-md-6">
+    <div class="content-card p-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-hourglass-split text-warning me-2"></i>Pending Expense Approvals</h6>
+      {% if pending_list %}
+        {% for e in pending_list %}
+        <div class="border rounded-3 p-3 mb-2">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="fw-semibold">{{ e.purpose }}</div>
+              <small class="text-muted">by {{ e.requester }} &middot; {{ e.created_at[:10] }}</small>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold text-danger">KES {{ "{:,.0f}".format(e.amount) }}</div>
+              <div class="d-flex gap-1 mt-1">
+                <form method="POST" action="{{ url_for('approve_expense', exp_id=e.id) }}" class="d-inline">
+                  <button class="btn btn-success btn-sm py-0 px-2"><i class="bi bi-check-lg"></i></button>
+                </form>
+                <form method="POST" action="{{ url_for('reject_expense', exp_id=e.id) }}" class="d-inline">
+                  <button class="btn btn-danger btn-sm py-0 px-2"><i class="bi bi-x-lg"></i></button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-center text-muted py-3"><i class="bi bi-check-circle text-success me-1"></i>No pending approvals</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Ledger -->
+  <div class="col-md-6">
+    <div class="content-card p-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-journal-text text-primary me-2"></i>Recent Ledger Entries</h6>
+      {% if recent_ledger %}
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Type</th><th>Description</th><th>Amount</th><th>Balance</th></tr></thead>
+          <tbody>
+          {% for l in recent_ledger %}
+          <tr>
+            <td><span class="badge {% if l.type=='IN' %}badge-approved{% else %}badge-rejected{% endif %}">{{ l.type }}</span></td>
+            <td class="small">{{ l.description[:30] }}{% if l.description|length > 30 %}…{% endif %}</td>
+            <td class="{% if l.type=='IN' %}ledger-in{% else %}ledger-out{% endif %} small">
+              {% if l.type=='IN' %}+{% else %}-{% endif %}{{ "{:,.0f}".format(l.amount) }}
+            </td>
+            <td class="small fw-semibold">{{ "{:,.0f}".format(l.balance_after) }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="text-center text-muted py-3">No ledger entries yet</div>
+      {% endif %}
+      <a href="{{ url_for('ledger_view') }}" class="btn btn-sm btn-outline-primary mt-2 w-100">View Full Ledger</a>
+    </div>
+  </div>
+
+  <!-- Recent Audit Log -->
+  <div class="col-12">
+    <div class="content-card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-shield-lock text-danger me-2"></i>Recent Audit Activity</h6>
+        <a href="{{ url_for('audit_logs') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th></tr></thead>
+          <tbody>
+          {% for log in recent_audit %}
+          <tr>
+            <td class="small text-muted">{{ log.timestamp[:16] if log.timestamp else '' }}</td>
+            <td class="small">{{ log.full_name or 'System' }}</td>
+            <td><span class="badge bg-secondary small">{{ log.action }}</span></td>
+            <td class="small">{{ log.entity }}{% if log.entity_id %} #{{ log.entity_id }}{% endif %}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

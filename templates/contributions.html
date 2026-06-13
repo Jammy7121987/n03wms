@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Contributions{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-arrow-down-circle me-2 text-success"></i>Contributions</h4>
+    <small class="text-muted">{{ contributions|length }} records</small>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="content-card p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle text-success me-1"></i>Record New Contribution</h6>
+      <form method="POST" action="{{ url_for('add_contribution') }}">
+        <div class="mb-2">
+          <label class="form-label">Member *</label>
+          <select name="member_id" class="form-select form-select-sm" required>
+            <option value="">-- Select --</option>
+            {% for m in members %}
+            <option value="{{ m.id }}">{{ m.full_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Period *</label>
+          <input type="text" name="period" class="form-control form-control-sm" placeholder="e.g. March 2025" required>
+        </div>
+        <div class="row g-1 mb-2">
+          <div class="col-6">
+            <label class="form-label">Amount (KES)</label>
+            <input type="number" name="amount" class="form-control form-control-sm" value="200" min="1" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Method</label>
+            <select name="payment_method" class="form-select form-select-sm">
+              <option value="cash">Cash</option>
+              <option value="mpesa">M-Pesa</option>
+              <option value="manual">Manual</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Reference Code</label>
+          <input type="text" name="reference_code" class="form-control form-control-sm" placeholder="Optional">
+        </div>
+        <button type="submit" class="btn btn-success btn-sm w-100"><i class="bi bi-check-circle me-1"></i>Record</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="content-card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>Date</th><th>Member</th><th>Period</th><th>Method</th><th>Reference</th><th class="text-end">Amount</th><th>Recorded By</th></tr>
+          </thead>
+          <tbody>
+          {% if contributions %}
+          {% for c in contributions %}
+          <tr>
+            <td class="small text-muted">{{ c.created_at[:10] }}</td>
+            <td class="fw-semibold small">{{ c.member_name }}</td>
+            <td><span class="badge bg-light text-dark border">{{ c.period }}</span></td>
+            <td class="small text-capitalize">{{ c.payment_method }}</td>
+            <td class="small text-muted">{{ c.reference_code or '—' }}</td>
+            <td class="text-end ledger-in fw-semibold">KES {{ "{:,.0f}".format(c.amount) }}</td>
+            <td class="small">{{ c.recorder_name }}</td>
+          </tr>
+          {% endfor %}
+          {% else %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No contributions yet</td></tr>
+          {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

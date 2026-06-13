@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}My Account{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-person-circle me-2 text-primary"></i>My Account</h4>
+  <small class="text-muted">{{ session.full_name }} — Read-only view</small>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="balance-hero">
+      <p class="mb-1 opacity-75 small text-uppercase">Group Balance</p>
+      <div class="amount">KES {{ "{:,.0f}".format(balance) }}</div>
+      <p class="mt-2 opacity-75 small">Available funds</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card h-100">
+      <div class="stat-icon mb-2" style="background:#d4edda;color:#27ae60"><i class="bi bi-arrow-down-circle-fill"></i></div>
+      <div class="stat-value" style="font-size:1.4rem">KES {{ "{:,.0f}".format(total_contributions) }}</div>
+      <div class="stat-label">Total Contributions (Group)</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card h-100">
+      <div class="stat-icon mb-2" style="background:#fdecea;color:#c0392b"><i class="bi bi-arrow-up-circle-fill"></i></div>
+      <div class="stat-value" style="font-size:1.4rem">KES {{ "{:,.0f}".format(total_expenses) }}</div>
+      <div class="stat-label">Total Expenses (Approved)</div>
+    </div>
+  </div>
+</div>
+
+<div class="content-card p-4">
+  <h6 class="fw-bold mb-3"><i class="bi bi-clock-history text-primary me-2"></i>My Contribution History</h6>
+  {% if my_contributions %}
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Period</th>
+          <th>Method</th>
+          <th>Reference</th>
+          <th class="text-end">Amount</th>
+          <th>Recorded By</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in my_contributions %}
+      <tr>
+        <td class="small">{{ c.created_at[:10] }}</td>
+        <td><span class="badge bg-light text-dark border">{{ c.period }}</span></td>
+        <td class="small text-capitalize">{{ c.payment_method }}</td>
+        <td class="small text-muted">{{ c.reference_code or '—' }}</td>
+        <td class="text-end ledger-in fw-semibold">KES {{ "{:,.0f}".format(c.amount) }}</td>
+        <td class="small">{{ c.recorder }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-4">
+    <i class="bi bi-inbox fs-3 d-block mb-2"></i>No contributions recorded yet
+  </div>
+  {% endif %}
+</div>
+
+<div class="alert alert-light border mt-4 small">
+  <i class="bi bi-info-circle text-primary me-1"></i>
+  This is a <strong>read-only</strong> view. Contact your Treasurer or Admin for any corrections.
+</div>
+{% endblock %}

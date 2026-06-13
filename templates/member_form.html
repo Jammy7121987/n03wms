@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Member{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-person-plus me-2 text-primary"></i>{{ action }} Member</h4>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="content-card p-4">
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Full Name *</label>
+          <input type="text" name="full_name" class="form-control" value="{{ member.full_name if member else '' }}" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Phone Number *</label>
+          <input type="text" name="phone" class="form-control" value="{{ member.phone if member else '' }}" placeholder="07XXXXXXXX" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-select">
+            <option value="member" {% if member and member.role == 'member' %}selected{% endif %}>Member</option>
+            <option value="treasurer" {% if member and member.role == 'treasurer' %}selected{% endif %}>Treasurer</option>
+            <option value="admin" {% if member and member.role == 'admin' %}selected{% endif %}>Admin (Chairperson)</option>
+          </select>
+        </div>
+        {% if member %}
+        <div class="mb-3">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-select">
+            <option value="active" {% if member.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if member.status == 'inactive' %}selected{% endif %}>Inactive</option>
+          </select>
+        </div>
+        {% else %}
+        <div class="mb-4">
+          <label class="form-label">Password *</label>
+          <input type="password" name="password" class="form-control" placeholder="Set initial password" required>
+          <div class="form-text">Member will use this to log in with their phone number.</div>
+        </div>
+        {% endif %}
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary flex-fill">
+            <i class="bi bi-check-lg me-1"></i>{{ action }} Member
+          </button>
+          <a href="{{ url_for('members_list') }}" class="btn btn-outline-secondary flex-fill">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

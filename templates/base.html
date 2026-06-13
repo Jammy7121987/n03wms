@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}N03 Welfare{% endblock %} — Ngobit 03 Welfare Group</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a5276;
+      --primary-light: #2e86c1;
+      --accent: #27ae60;
+      --accent-light: #2ecc71;
+      --danger: #c0392b;
+      --warning: #f39c12;
+      --light-bg: #f4f6f9;
+      --card-shadow: 0 2px 12px rgba(0,0,0,0.09);
+    }
+    body { background: var(--light-bg); font-family: 'Segoe UI', Arial, sans-serif; }
+    .navbar { background: var(--primary) !important; }
+    .navbar-brand { font-weight: 700; letter-spacing: 0.5px; font-size: 1.1rem; }
+    .sidebar { background: #1a2e45; min-height: 100vh; padding-top: 1.5rem; }
+    .sidebar .nav-link { color: #adb5bd; border-radius: 8px; margin: 2px 8px; padding: 9px 16px; font-size: 0.92rem; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary-light); color: #fff; }
+    .sidebar .nav-link i { width: 20px; }
+    .sidebar-section { color: #6c757d; font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 24px 4px; margin-top: 8px; }
+    .stat-card { background: #fff; border-radius: 12px; padding: 1.4rem 1.5rem; box-shadow: var(--card-shadow); border: none; }
+    .stat-card .stat-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; color: #1a2e45; }
+    .stat-card .stat-label { color: #6c757d; font-size: 0.83rem; }
+    .content-card { background: #fff; border-radius: 12px; box-shadow: var(--card-shadow); border: none; }
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-approved { background: #d1e7dd; color: #0a3622; }
+    .badge-rejected { background: #f8d7da; color: #58151c; }
+    .table th { background: #f8f9fa; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; border-top: 0; }
+    .balance-hero { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; border-radius: 16px; padding: 2rem; }
+    .balance-hero .amount { font-size: 2.5rem; font-weight: 800; }
+    .btn-primary { background: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-light); border-color: var(--primary-light); }
+    .btn-success { background: var(--accent); border-color: var(--accent); }
+    .btn-success:hover { background: var(--accent-light); border-color: var(--accent-light); }
+    .form-label { font-weight: 600; font-size: 0.88rem; color: #495057; }
+    .page-header { border-bottom: 2px solid #e9ecef; padding-bottom: 0.75rem; margin-bottom: 1.5rem; }
+    .ledger-in { color: var(--accent); font-weight: 600; }
+    .ledger-out { color: var(--danger); font-weight: 600; }
+    @media (max-width: 768px) { .sidebar { min-height: auto; } }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+{% if session.user_id %}
+<nav class="navbar navbar-dark px-3 py-2">
+  <span class="navbar-brand"><i class="bi bi-shield-check me-2"></i>N03 Welfare Management</span>
+  <div class="d-flex align-items-center gap-3">
+    <span class="text-white-50 small"><i class="bi bi-person-circle me-1"></i>{{ session.full_name }}
+      <span class="badge bg-secondary ms-1">{{ session.role }}</span>
+    </span>
+    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-2 sidebar d-none d-md-block">
+      <div class="sidebar-section">Navigation</div>
+      <nav class="nav flex-column">
+        <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+          <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </a>
+        {% if session.role in ('admin', 'treasurer') %}
+        <a class="nav-link {% if request.endpoint == 'members_list' %}active{% endif %}" href="{{ url_for('members_list') }}">
+          <i class="bi bi-people me-2"></i>Members
+        </a>
+        <a class="nav-link {% if request.endpoint == 'contributions_list' %}active{% endif %}" href="{{ url_for('contributions_list') }}">
+          <i class="bi bi-arrow-down-circle me-2"></i>Contributions
+        </a>
+        <a class="nav-link {% if request.endpoint == 'expenses_list' %}active{% endif %}" href="{{ url_for('expenses_list') }}">
+          <i class="bi bi-arrow-up-circle me-2"></i>Expenses
+        </a>
+        <a class="nav-link {% if request.endpoint == 'ledger_view' %}active{% endif %}" href="{{ url_for('ledger_view') }}">
+          <i class="bi bi-journal-text me-2"></i>Ledger
+        </a>
+        <a class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">
+          <i class="bi bi-bar-chart me-2"></i>Reports
+        </a>
+        {% else %}
+        <a class="nav-link {% if request.endpoint == 'expenses_list' %}active{% endif %}" href="{{ url_for('expenses_list') }}">
+          <i class="bi bi-receipt me-2"></i>Expenses
+        </a>
+        {% endif %}
+        {% if session.role == 'admin' %}
+        <div class="sidebar-section">Admin</div>
+        <a class="nav-link {% if request.endpoint == 'audit_logs' %}active{% endif %}" href="{{ url_for('audit_logs') }}">
+          <i class="bi bi-shield-lock me-2"></i>Audit Logs
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+
+    <!-- Main content -->
+    <div class="col-md-10 py-4 px-4">
+      <!-- Flash messages -->
+      {% for cat, msg in get_flashed_messages(with_categories=True) %}
+      <div class="alert alert-{{ 'danger' if cat == 'danger' else ('warning' if cat == 'warning' else ('success' if cat == 'success' else 'info')) }} alert-dismissible fade show" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="container-fluid">
+  {% block public_content %}{% endblock %}
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2 text-primary"></i>Financial Reports</h4>
+  <small class="text-muted">Group financial summary</small>
+</div>
+
+<!-- Summary Row -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="balance-hero">
+      <p class="mb-1 opacity-75 small text-uppercase">Net Balance</p>
+      <div class="amount">KES {{ "{:,.0f}".format(balance) }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card h-100">
+      <div class="stat-label mb-1">Total Contributions</div>
+      <div class="stat-value" style="color:#27ae60">KES {{ "{:,.0f}".format(total_contributions) }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card h-100">
+      <div class="stat-label mb-1">Total Expenses (Approved)</div>
+      <div class="stat-value" style="color:#c0392b">KES {{ "{:,.0f}".format(total_expenses) }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Monthly Contributions -->
+<div class="content-card p-4 mb-4">
+  <h6 class="fw-bold mb-3"><i class="bi bi-calendar3 text-success me-2"></i>Monthly Contributions Summary</h6>
+  {% if monthly %}
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead><tr><th>Period</th><th>No. of Payments</th><th class="text-end">Total Collected</th></tr></thead>
+      <tbody>
+      {% for m in monthly %}
+      <tr>
+        <td><span class="badge bg-light text-dark border">{{ m.period }}</span></td>
+        <td>{{ m.count }} payment{{ 's' if m.count != 1 else '' }}</td>
+        <td class="text-end ledger-in fw-semibold">KES {{ "{:,.0f}".format(m.total) }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted text-center py-3">No contribution data available.</p>
+  {% endif %}
+</div>
+
+<!-- Member List with Status -->
+<div class="content-card p-4">
+  <h6 class="fw-bold mb-3"><i class="bi bi-people text-primary me-2"></i>Active Members</h6>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Phone</th>
+          {% for p in periods %}
+          <th class="text-center small">{{ p.period }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+      {% for m in members_status %}
+      <tr>
+        <td class="text-muted small">{{ loop.index }}</td>
+        <td class="fw-semibold small">{{ m.full_name }}</td>
+        <td class="small">{{ m.phone }}</td>
+        {% for p in periods %}
+        <td class="text-center">—</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i>
+    Detailed per-member per-period payment grid available in Contributions section.
+  </p>
+</div>
+{% endblock %}

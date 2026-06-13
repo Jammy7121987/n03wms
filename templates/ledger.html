@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Ledger{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2 text-primary"></i>Financial Ledger</h4>
+    <small class="text-muted">Immutable transaction log — no deletions permitted</small>
+  </div>
+  <div class="balance-hero px-4 py-2" style="border-radius:10px">
+    <span class="small opacity-75">Balance: </span>
+    <span class="fw-bold">KES {{ "{:,.0f}".format(balance) }}</span>
+  </div>
+</div>
+
+<div class="content-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Date & Time</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th class="text-end">Amount</th>
+          <th class="text-end">Balance After</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% if entries %}
+      {% for e in entries %}
+      <tr>
+        <td class="text-muted small">{{ e.id }}</td>
+        <td class="small text-muted">{{ e.created_at[:16] }}</td>
+        <td>
+          <span class="badge {% if e.type=='IN' %}badge-approved{% else %}badge-rejected{% endif %}">
+            {% if e.type=='IN' %}<i class="bi bi-arrow-down me-1"></i>{% else %}<i class="bi bi-arrow-up me-1"></i>{% endif %}
+            {{ e.type }}
+          </span>
+        </td>
+        <td class="small">{{ e.description }}</td>
+        <td class="text-end fw-semibold {% if e.type=='IN' %}ledger-in{% else %}ledger-out{% endif %}">
+          {% if e.type=='IN' %}+{% else %}-{% endif %}KES {{ "{:,.0f}".format(e.amount) }}
+        </td>
+        <td class="text-end fw-bold">KES {{ "{:,.0f}".format(e.balance_after) }}</td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted py-4">No ledger entries yet</td></tr>
+      {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="alert alert-light border mt-3 small">
+  <i class="bi bi-lock-fill text-danger me-1"></i>
+  <strong>Audit-safe:</strong> Ledger entries cannot be deleted or edited. All corrections are made via new entries only.
+</div>
+{% endblock %}

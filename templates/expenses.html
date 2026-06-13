@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Expenses{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-arrow-up-circle me-2 text-danger"></i>Expenses</h4>
+    <small class="text-muted">All expense records</small>
+  </div>
+</div>
+
+<div class="row g-4">
+  {% if role in ('admin', 'treasurer') %}
+  <div class="col-md-4">
+    <div class="content-card p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle text-warning me-1"></i>Submit Expense</h6>
+      <form method="POST" action="{{ url_for('add_expense') }}">
+        <div class="mb-3">
+          <label class="form-label">Amount (KES) *</label>
+          <input type="number" name="amount" class="form-control" step="0.01" min="1" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Purpose / Description *</label>
+          <textarea name="purpose" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="alert alert-warning py-2 small">
+          <i class="bi bi-exclamation-triangle me-1"></i>Requires admin approval
+        </div>
+        <button type="submit" class="btn btn-warning w-100 text-dark"><i class="bi bi-send me-1"></i>Submit</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="{% if role in ('admin', 'treasurer') %}col-md-8{% else %}col-12{% endif %}">
+    <div class="content-card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>Date</th><th>Purpose</th><th>Requested By</th><th>Status</th><th class="text-end">Amount</th>
+            {% if role == 'admin' %}<th>Action</th>{% endif %}</tr>
+          </thead>
+          <tbody>
+          {% if expenses %}
+          {% for e in expenses %}
+          <tr>
+            <td class="small text-muted">{{ e.created_at[:10] }}</td>
+            <td class="small fw-semibold" style="max-width:200px">{{ e.purpose }}</td>
+            <td class="small">{{ e.requester }}</td>
+            <td>
+              <span class="badge {% if e.status == 'approved' %}badge-approved{% elif e.status == 'rejected' %}badge-rejected{% else %}badge-pending{% endif %}">
+                {{ e.status }}
+              </span>
+              {% if e.approver and e.status != 'pending' %}
+              <br><small class="text-muted">by {{ e.approver }}</small>
+              {% endif %}
+            </td>
+            <td class="text-end fw-semibold {% if e.status == 'approved' %}ledger-out{% endif %}">KES {{ "{:,.0f}".format(e.amount) }}</td>
+            {% if role == 'admin' %}
+            <td>
+              {% if e.status == 'pending' %}
+              <div class="d-flex gap-1">
+                <form method="POST" action="{{ url_for('approve_expense', exp_id=e.id) }}">
+                  <button class="btn btn-success btn-sm"><i class="bi bi-check-lg"></i> Approve</button>
+                </form>
+                <form method="POST" action="{{ url_for('reject_expense', exp_id=e.id) }}">
+                  <button class="btn btn-danger btn-sm"><i class="bi bi-x-lg"></i></button>
+                </form>
+              </div>
+              {% else %}
+              <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+          {% else %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No expenses recorded</td></tr>
+          {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

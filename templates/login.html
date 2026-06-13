@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block public_content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #1a5276 0%, #2e86c1 100%);">
+  <div class="col-md-4 col-sm-10">
+    <div class="text-center mb-4">
+      <div style="width:72px;height:72px;background:rgba(255,255,255,0.15);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+        <i class="bi bi-shield-check text-white" style="font-size:2rem;"></i>
+      </div>
+      <h4 class="text-white fw-bold mb-1">Ngobit 03 Welfare Group</h4>
+      <p class="text-white-50 small">Financial Transparency System</p>
+    </div>
+
+    <div class="card border-0 shadow-lg" style="border-radius:16px;">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-1">Welcome back</h5>
+        <p class="text-muted small mb-4">Sign in to your account</p>
+
+        {% for cat, msg in get_flashed_messages(with_categories=True) %}
+        <div class="alert alert-{{ 'danger' if cat == 'danger' else 'info' }} py-2 small">{{ msg }}</div>
+        {% endfor %}
+
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+              <input type="text" name="phone" class="form-control" placeholder="07XXXXXXXX" required autofocus>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+    <p class="text-center text-white-50 small mt-3">
+      &copy; 2025 Ngobit 03 Welfare Group — Transparency First
+    </p>
+  </div>
+</div>
+{% endblock %}
