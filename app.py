@@ -10,8 +10,7 @@ import os
 
 os.makedirs("instance", exist_ok=True)
 
-with app.app_context():
-    init_db()
+
 app = Flask(__name__)
 app.secret_key = "n03wms-secret-change-in-production-2024"
 DATABASE = "instance/n03wms.db"
@@ -482,7 +481,14 @@ def reports():
 
 
 # ─────────────────────────── MAIN ────────────────────────────────────────────
-
 if __name__ == "__main__":
+    import os
+
+    os.makedirs("instance", exist_ok=True)
+
     port = int(os.environ.get("PORT", 5000))
+
+    with app.app_context():
+        init_db()
+
     app.run(host="0.0.0.0", port=port, debug=False)
