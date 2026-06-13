@@ -147,20 +147,20 @@ def init_db():
     """)
 
     # Seed admin if not exists
-    admin = db.execute("SELECT id FROM users WHERE role='admin'").fetchone()
-    if not admin:
-        pw = bcrypt.hashpw(b"admin1234", bcrypt.gensalt()).decode()
-        db.execute(
-            "INSERT INTO users (full_name, phone, password_hash, role) VALUES (?,?,?,?)",
-            ("Chairperson Admin", "0700000001", pw, "admin")
-        )
-        db.commit()
-        user_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
-        db.execute("INSERT INTO members (user_id) VALUES (?)", (user_id,))
-        db.commit()
-        print("✅ Default admin created — phone: 0700000001 / password: admin1234")
+    pw_hash = bcrypt.hashpw(b"admin1234", bcrypt.gensalt()).decode()
 
-    db.close()
+db.execute("""
+INSERT OR IGNORE INTO users (id, full_name, phone, password_hash, role)
+VALUES (1, 'Chairperson Admin', '0700000001', ?, 'admin')
+""", (pw_hash,))
+
+db.execute("""
+INSERT OR IGNORE INTO members (user_id)
+VALUES (1)
+""")
+
+db.commit()
+db.close()
 
 
 # ─────────────────────────── LEDGER ENGINE ───────────────────────────────────
@@ -192,7 +192,9 @@ def login():
         phone = request.form["phone"].strip()
         password = request.form["password"].encode()
         user = query("SELECT * FROM users WHERE phone=? AND is_active=1", (phone,), one=True)
-        if user and bcrypt.checkpw(password, user["password_hash"].encode()):
+        if not user:
+    flash("Invalid phone number or password.", "danger")
+    return render_template("login.html")
             session.update({"user_id": user["id"], "full_name": user["full_name"], "role": user["role"]})
             audit("LOGIN", "users", user["id"])
             flash(f"Welcome back, {user['full_name']}!", "success")
