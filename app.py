@@ -147,20 +147,26 @@ def init_db():
     """)
 
     # Seed admin if not exists
-# Seed admin safely (idempotent)
-pw_hash = bcrypt.hashpw(b"admin1234", bcrypt.gensalt()).decode()
+    admin = db.execute("SELECT id FROM users WHERE role='admin'").fetchone()
 
-db.execute("""
-INSERT OR IGNORE INTO users (id, full_name, phone, password_hash, role)
-VALUES (1, 'Chairperson Admin', '0700000001', ?, 'admin')
-""", (pw_hash,))
+    if not admin:
+        pw = bcrypt.hashpw(b"admin1234", bcrypt.gensalt()).decode()
 
-db.execute("""
-INSERT OR IGNORE INTO members (user_id)
-VALUES (1)
-""")
+        db.execute(
+            "INSERT INTO users (full_name, phone, password_hash, role) VALUES (?,?,?,?)",
+            ("Chairperson Admin", "0700000001", pw, "admin")
+        )
 
-db.commit()
+        db.commit()
+
+        user_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+        db.execute("INSERT INTO members (user_id) VALUES (?)", (user_id,))
+        db.commit()
+
+        print("✅ Default admin created — phone: 0700000001 / password: admin1234")
+
+    db.close()
 
 
 # ─────────────────────────── LEDGER ENGINE ───────────────────────────────────
@@ -482,14 +488,13 @@ def reports():
 
 
 # ─────────────────────────── MAIN ────────────────────────────────────────────
+# ─────────────────────────── MAIN ────────────────────────────────────────────
+
+os.makedirs("instance", exist_ok=True)
+
+# SAFE INIT FOR BOTH LOCAL + RENDER
+with app.app_context():
+    init_db()
+
 if __name__ == "__main__":
-    import os
-
-    os.makedirs("instance", exist_ok=True)
-
-    port = int(os.environ.get("PORT", 5000))
-
-    with app.app_context():
-        init_db()
-
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(debug=True, port=5000)
